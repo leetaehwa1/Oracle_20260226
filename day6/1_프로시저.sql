@@ -1,0 +1,64 @@
+-- 프로시저로 INSERT, DELETE
+
+--STUDENT 테이블에 학번, 이름, 학과를 입력받아서 저장하는 프로시저
+
+CREATE OR REPLACE PROCEDURE STUINSERT_PROC
+    (
+        I_STUNO IN VARCHAR2,
+        I_STUNAME IN STUDENT.STU_NAME%TYPE,
+        I_STUDEPT IN STUDENT.STU_DEPT%TYPE
+    )
+IS
+   
+BEGIN
+    IF LENGTH(I_STUNO) != 8 THEN
+        -- DBMS_OUTPUT.PUT_LINE('학번은 8글자'); --ORACLE에서만 보이는 프린트문.
+        RAISE_APPLICATION_ERROR(-20001, '학번은 8글자!'); 
+        --사용자가 직접 만드는 코드 ,에러 번호는 20000~20999
+    END IF;
+    
+    INSERT INTO STUDENT(STU_NO,STU_NAME,STU_DEPT)
+    VALUES(I_STUNO,I_STUNAME,I_STUDEPT);
+    COMMIT;
+END;
+/
+SET SERVEROUTPUT ON;
+EXEC STUINSERT_PROC('12345678','홍길동','기계');
+SELECT *
+FROM STUDENT;
+
+SELECT * FROM EMP;
+EXEC EMPDELETE(EMPNO); 
+--해당 사번 직원 데이터 삭제
+---
+
+CREATE OR REPLACE PROCEDURE EMPDELETE_PROC
+    (
+        I_EMPNO IN EMP.EMPNO%TYPE
+    )
+IS
+   O_SAL NUMBER;
+BEGIN
+    SELECT SAL
+    INTO O_SAL
+    FROM EMP
+    WHERE EMPNO = I_EMPNO;
+
+    IF (O_SAL) >= 3000 THEN
+        RAISE_APPLICATION_ERROR(-20002, '급여가 3000이상인 사람은 삭제 불가능');
+    END IF;
+    
+     DELETE FROM EMP
+    WHERE EMPNO = I_EMPNO;
+    
+END;
+/
+SELECT * FROM EMP;
+EXEC EMPDELETE_PROC('7369');
+ROLLBACK;
+
+
+-- 급여가 3000 이상인 직원들은 삭제 불가하도록
+-- -20002,에러 메시지 '3000 이상 급여를 받는 직원은 삭제 불가합니다.'
+
+
